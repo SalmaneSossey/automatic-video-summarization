@@ -128,9 +128,11 @@ ax.text(9.5, 11.2, info_text, fontsize=9,
        family='monospace')
 
 plt.tight_layout()
-plt.savefig('/home/runner/work/automatic-video-summarization/automatic-video-summarization/docs/pipeline.png', 
-           dpi=300, bbox_inches='tight', facecolor='white')
-print("Pipeline diagram saved to: docs/pipeline.png")
+import os
+script_dir = os.path.dirname(os.path.abspath(__file__))
+pipeline_path = os.path.join(script_dir, 'pipeline.png')
+plt.savefig(pipeline_path, dpi=300, bbox_inches='tight', facecolor='white')
+print(f"Pipeline diagram saved to: {pipeline_path}")
 
 # Also create a simplified version
 fig2, ax2 = plt.subplots(figsize=(10, 8))
@@ -165,8 +167,8 @@ for i, (y, text) in enumerate(steps):
         create_arrow(ax2, 5, y - 0.35, 5, steps[i+1][0] + 0.35)
 
 plt.tight_layout()
-plt.savefig('/home/runner/work/automatic-video-summarization/automatic-video-summarization/docs/pipeline_simple.png', 
-           dpi=200, bbox_inches='tight', facecolor='white')
-print("Simplified pipeline diagram saved to: docs/pipeline_simple.png")
+pipeline_simple_path = os.path.join(script_dir, 'pipeline_simple.png')
+plt.savefig(pipeline_simple_path, dpi=200, bbox_inches='tight', facecolor='white')
+print(f"Simplified pipeline diagram saved to: {pipeline_simple_path}")
 
 plt.close('all')

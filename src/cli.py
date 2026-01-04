@@ -107,7 +107,8 @@ Examples:
             boundaries=summarizer.boundaries,
             output_dir=args.output,
             base_name=args.base_name,
-            create_video=args.create_video
+            create_video=args.create_video,
+            threshold=summarizer.threshold
         )
         
         # Print summary

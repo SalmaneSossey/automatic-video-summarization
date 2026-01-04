@@ -40,6 +40,7 @@ class VideoSummarizer:
         self.boundaries = []
         self.keyframes = []
         self.keyframe_indices = []
+        self.threshold = None  # Store the threshold used for boundary detection
         
     def load_video(self) -> None:
         """Load video and sample frames."""
@@ -76,7 +77,7 @@ class VideoSummarizer:
         """
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         hist = cv2.calcHist([hsv], [0, 1, 2], None, bins, [0, 180, 0, 256, 0, 256])
-        hist = cv2.normalize(hist, hist).flatten()
+        hist = cv2.normalize(hist, None, 0, 1, cv2.NORM_MINMAX).flatten()
         return hist
     
     def compute_edge_histogram(self, frame: np.ndarray, bins: int = 16) -> np.ndarray:
@@ -175,14 +176,14 @@ class VideoSummarizer:
         smoothed_distances = self.smooth_distances(window_size)
         
         # Adaptive threshold
-        threshold = np.percentile(smoothed_distances, threshold_percentile)
-        print(f"Adaptive threshold: {threshold:.3f} (percentile: {threshold_percentile})")
+        self.threshold = np.percentile(smoothed_distances, threshold_percentile)
+        print(f"Adaptive threshold: {self.threshold:.3f} (percentile: {threshold_percentile})")
         
         # Find peaks above threshold
         self.boundaries = [0]  # Start of video is always a boundary
         
         for i in range(1, len(smoothed_distances)):
-            if smoothed_distances[i] > threshold:
+            if smoothed_distances[i] > self.threshold:
                 # Check minimum shot length
                 if i - self.boundaries[-1] >= min_shot_length:
                     self.boundaries.append(i)

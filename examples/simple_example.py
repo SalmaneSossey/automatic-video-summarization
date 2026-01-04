@@ -21,6 +21,13 @@ def main():
     video_path = 'test_video.mp4'  # Path to your video
     output_dir = './example_output'
     
+    # Check if video exists
+    import os
+    if not os.path.exists(video_path):
+        print(f"Error: Video file not found: {video_path}")
+        print("Please run 'python create_test_video.py' first to create a test video.")
+        return 1
+    
     print("=" * 60)
     print("Video Summarization Example")
     print("=" * 60)
@@ -63,7 +70,8 @@ def main():
         boundaries=summarizer.boundaries,
         output_dir=output_dir,
         base_name='example',
-        create_video=True
+        create_video=True,
+        threshold=summarizer.threshold
     )
     
     print(f"\nExported files:")

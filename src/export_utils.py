@@ -195,7 +195,7 @@ def plot_distance_curve(distances: np.ndarray, boundaries: List[int],
 def export_all(keyframes: List[np.ndarray], keyframe_indices: List[int],
                summary_data: Dict, distances: np.ndarray, boundaries: List[int],
                output_dir: str = '.', base_name: str = 'summary',
-               create_video: bool = False) -> Dict[str, str]:
+               create_video: bool = False, threshold: float = None) -> Dict[str, str]:
     """
     Export all summarization results.
     
@@ -208,6 +208,7 @@ def export_all(keyframes: List[np.ndarray], keyframe_indices: List[int],
         output_dir: Output directory
         base_name: Base name for output files
         create_video: Whether to create summary video
+        threshold: Optional threshold value used for boundary detection
         
     Returns:
         Dictionary mapping output type to file path
@@ -231,7 +232,9 @@ def export_all(keyframes: List[np.ndarray], keyframe_indices: List[int],
     
     # Distance curve plot
     curve_path = os.path.join(output_dir, f'{base_name}_distance_curve.png')
-    threshold = np.percentile(distances, 75) if len(distances) > 0 else None
+    # Use provided threshold or calculate from distances
+    if threshold is None:
+        threshold = np.percentile(distances, 75) if len(distances) > 0 else None
     plot_distance_curve(distances, boundaries, curve_path, threshold)
     output_files['distance_curve'] = curve_path
     

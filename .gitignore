@@ -47,6 +47,10 @@ output/
 *.mov
 !examples/*.mp4
 
+# Test outputs
+examples/test_output/
+examples/example_output/
+
 # Temporary files
 tmp/
 temp/

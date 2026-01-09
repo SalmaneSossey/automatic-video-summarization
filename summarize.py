@@ -32,10 +32,17 @@ from src.frame_sampling import sample_frames
 from src.features import preprocess_frame, hsv_histogram, edge_histogram
 from src.distances import combined_distance
 from src.shot_detection import ShotDetectionParams, detect_shot_boundaries
-from src.keyframes import build_shots, pick_keyframes_middle, select_highlight_segments
+from src.keyframes import (
+    build_shots,
+    pick_keyframes_middle,
+    pick_keyframes_best,
+    select_highlight_segments,
+)
 from src.io_outputs import save_image_bgr
 from src.storyboard import save_storyboard
 from src.summary_video import make_summary_video
+from src.av_concat import make_summary_with_audio
+from src.preprocessing import ensure_clean_video
 
 
 def print_banner():
@@ -74,6 +81,9 @@ def summarize(
     threshold_percentile: float = 92.0,
     min_shot_duration: float = 3.0,
     secs_per_shot: float = 2.5,
+    keep_audio: bool = False,
+    clean_input: bool = False,
+    best_keyframes: bool = False,
 ) -> dict:
     """
     Main summarization pipeline.
@@ -85,6 +95,12 @@ def summarize(
     input_path = Path(input_path)
     outdir = Path(output_dir)
     outdir.mkdir(parents=True, exist_ok=True)
+
+    # Optional cleaning to avoid codec warnings
+    if clean_input:
+        cleaned_path, was_cleaned, msg = ensure_clean_video(input_path, outdir)
+        print(f"   Preprocess: {msg}")
+        input_path = cleaned_path
     
     # Get video info
     print(f"📹 Input: {input_path.name}")
@@ -137,7 +153,11 @@ def summarize(
     print("[5/5] Generating outputs...")
     
     # Keyframes
-    keyframes = pick_keyframes_middle(shots, frames)
+    if best_keyframes:
+        scored = pick_keyframes_best(shots, frames)
+        keyframes = [s.frame for s in scored]
+    else:
+        keyframes = pick_keyframes_middle(shots, frames)
     keyframe_dir = outdir / "keyframes"
     keyframe_paths = []
     for i, kf in enumerate(keyframes):
@@ -168,13 +188,26 @@ def summarize(
     
     # Summary video
     summary_path = outdir / "summary.mp4"
-    make_summary_video(
-        video_path=str(input_path),
-        shots=shots,
-        out_path=summary_path,
-        secs_per_shot=secs_per_shot,
-        out_width=1280,
-    )
+    if keep_audio:
+        segments = [(start, end) for start, end, _, _ in highlights]
+        success, msg = make_summary_with_audio(input_path, segments, summary_path)
+        if not success:
+            print(f"   Audio summary failed ({msg}), falling back to video-only...")
+            make_summary_video(
+                video_path=str(input_path),
+                shots=shots,
+                out_path=summary_path,
+                secs_per_shot=secs_per_shot,
+                out_width=1280,
+            )
+    else:
+        make_summary_video(
+            video_path=str(input_path),
+            shots=shots,
+            out_path=summary_path,
+            secs_per_shot=secs_per_shot,
+            out_width=1280,
+        )
     
     # Calculate summary duration
     summary_info = get_video_info(str(summary_path))
@@ -204,6 +237,9 @@ def summarize(
                 "threshold_percentile": threshold_percentile,
                 "min_shot_duration": min_shot_duration,
                 "secs_per_shot": secs_per_shot,
+                "keep_audio": keep_audio,
+                "clean_input": clean_input,
+                "best_keyframes": best_keyframes,
             }
         },
         "scenes": [],
@@ -255,6 +291,9 @@ Examples:
     parser.add_argument("--threshold", type=float, default=92.0, help="Scene detection sensitivity 50-99 (default: 92)")
     parser.add_argument("--min-duration", type=float, default=3.0, help="Minimum scene duration in seconds (default: 3)")
     parser.add_argument("--secs-per-shot", type=float, default=2.5, help="Seconds per scene in summary (default: 2.5)")
+    parser.add_argument("--keep-audio", action="store_true", help="Preserve audio using ffmpeg (requires ffmpeg in PATH)")
+    parser.add_argument("--clean-input", action="store_true", help="Re-encode input to avoid decode warnings")
+    parser.add_argument("--best-keyframes", action="store_true", help="Pick sharp/low-motion keyframes instead of midpoint")
     
     args = parser.parse_args()
     
@@ -271,6 +310,9 @@ Examples:
             threshold_percentile=args.threshold,
             min_shot_duration=args.min_duration,
             secs_per_shot=args.secs_per_shot,
+            keep_audio=args.keep_audio,
+            clean_input=args.clean_input,
+            best_keyframes=args.best_keyframes,
         )
         
         m = result["manifest"]

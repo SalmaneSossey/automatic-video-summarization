@@ -56,11 +56,12 @@ def cut_segment(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     
     if stream_copy:
-        # Fast path: stream copy (no re-encoding)
+        # Fast path: stream copy with accurate seeking
+        # Use -ss after -i for accuracy (slightly slower but precise)
         cmd = [
             ffmpeg, "-y",
-            "-ss", f"{start_sec:.3f}",
             "-i", str(input_path),
+            "-ss", f"{start_sec:.3f}",
             "-t", f"{duration:.3f}",
             "-c", "copy",
             "-avoid_negative_ts", "make_zero",
@@ -70,8 +71,8 @@ def cut_segment(
         # Slow path: re-encode for compatibility
         cmd = [
             ffmpeg, "-y",
-            "-ss", f"{start_sec:.3f}",
             "-i", str(input_path),
+            "-ss", f"{start_sec:.3f}",
             "-t", f"{duration:.3f}",
             "-c:v", "libx264", "-crf", "18", "-preset", "fast",
             "-c:a", "aac", "-b:a", "160k",

@@ -1,8 +1,8 @@
 # 🎬 Automatic Video Summarization
 
-**Transform long videos into concise, browsable summaries in seconds.**
+**Transform long videos into concise, browsable summaries — perfect for YouTube Shorts!**
 
-A production-ready tool that automatically detects scene changes, extracts representative keyframes, and generates condensed summary videos **with audio** and structured metadata for UI integration.
+A production-ready tool that automatically detects scene changes, extracts representative keyframes, and generates condensed summary videos **with audio** — all controllable via CLI or a modern **Web UI**.
 
 ---
 
@@ -15,9 +15,9 @@ A production-ready tool that automatically detects scene changes, extracts repre
 ![Analysis](docs/demo/analysis.png)
 
 ### Summary Video
-📹 **15 min video → 64 seconds with audio!** (93% compression, 16 scenes detected)
+📹 **15 min video → 60 seconds with audio!** (93% compression, perfect for Shorts)
 
-> Run the demo yourself: `python summarize.py --input data/demo.mp4 --output outputs/result --keep-audio`
+> **Quick start:** `python app.py` then open http://localhost:7860
 
 ---
 
@@ -28,6 +28,8 @@ A production-ready tool that automatically detects scene changes, extracts repre
 | 🎯 **Scene Detection** | Visual change detection using color (HSV) and edge analysis |
 | 🖼️ **Keyframe Extraction** | Automatically selects the most representative frame from each scene |
 | 🔊 **Audio Preservation** | Summary video keeps original audio (requires ffmpeg) |
+| ⏱️ **Duration Control** | Set maximum summary length (e.g., 60s for YouTube Shorts) |
+| 🌐 **Web UI** | Gradio-based interface — drag & drop, no CLI needed |
 | 📊 **Structured Output** | JSON manifest with timestamps, durations, and quality scores |
 | 🎥 **Summary Video** | Condensed MP4 preserving the essence of the original |
 | 📋 **Storyboard** | Visual grid overview of all detected scenes |
@@ -41,37 +43,71 @@ A production-ready tool that automatically detects scene changes, extracts repre
 ### 1. Install Dependencies
 
 ```bash
-pip install opencv-python numpy matplotlib
+pip install -r requirements.txt
 ```
 
-For audio support, install ffmpeg:
+**requirements.txt includes:**
+- opencv-python
+- numpy  
+- matplotlib
+- gradio (for Web UI)
+
+### 2. Install ffmpeg (for audio support)
+
 - **Windows**: `winget install --id Gyan.FFmpeg -e --source winget`
 - **macOS**: `brew install ffmpeg`
 - **Linux**: `sudo apt install ffmpeg`
 
-### 2. Run Summarization
+### 3. Run the Tool
 
+#### Option A: 🌐 Web UI (Recommended)
+```bash
+python app.py
+```
+Then open http://localhost:7860 in your browser — drag & drop your video!
+
+#### Option B: 💻 Command Line
 ```bash
 # Basic (no audio)
 python summarize.py --input your_video.mp4 --output results/
 
-# With audio preservation
-python summarize.py --input your_video.mp4 --output results/ --keep-audio
+# YouTube Shorts (60s max, with audio)
+python summarize.py --input your_video.mp4 --output results/ \
+    --max-duration 60 --keep-audio --best-keyframes
 ```
 
 ---
 
-## 📊 Example Run
+## 🌐 Web UI
 
-**Command:**
+Launch the Gradio web interface for an easy-to-use, no-code experience:
+
+```bash
+python app.py
+```
+
+**Web UI Features:**
+- 📁 Drag & drop video upload
+- 🎚️ Adjustable parameters with sliders
+- ⏱️ Max duration control (perfect for Shorts)
+- 📥 Download summary video, storyboard, and manifest
+- 🔄 Real-time processing feedback
+
+---
+
+## 📊 Example: YouTube Shorts Workflow
+
+Create a **60-second Short** from a 15-minute video:
+
 ```bash
 python summarize.py \
     --input data/demo.mp4 \
-    --output outputs/result_audio \
-    --threshold 97 \
-    --min-duration 5 \
-    --secs-per-shot 3 \
-    --keep-audio
+    --output outputs/shorts \
+    --max-duration 60 \
+    --threshold 95 \
+    --secs-per-shot 2.5 \
+    --keep-audio \
+    --best-keyframes
 ```
 
 **Console Output:**
@@ -90,34 +126,18 @@ python summarize.py \
 [2/5] Extracting visual features...
 [3/5] Computing frame distances...
 [4/5] Detecting scene changes...
-   Found 16 distinct scenes
+   Found 24 distinct scenes
 [5/5] Generating outputs...
+   Trimmed to 24 segments (60.0s) for max duration
 
 ============================================================
 ✅ SUMMARIZATION COMPLETE
 ============================================================
    Input:    00:15:00 (900.4s)
-   Summary:  00:01:04 (64.0s)
+   Summary:  00:01:00 (60.0s)
    Compression: 93%
-   Scenes:   16
-   Time:     1216.9s
-
-📁 Outputs: outputs/result_audio/
-   ├── summary.mp4      (condensed video with audio)
-   ├── summary.json     (structured metadata)
-   ├── storyboard.png   (visual overview)
-   ├── analysis.png     (detection chart)
-   └── keyframes/       (representative frames)
+   Scenes:   24
 ```
-
-**Generated Files:**
-| File | Description |
-|------|-------------|
-| `summary.mp4` | 64s condensed video with audio (H.264 + AAC) |
-| `summary.json` | Structured metadata with timestamps and scores |
-| `storyboard.png` | Grid of 16 keyframes |
-| `analysis.png` | Scene detection curve with boundaries |
-| `keyframes/` | 16 JPEG keyframes (one per scene) |
 
 ---
 
@@ -131,6 +151,7 @@ python summarize.py \
 | `--threshold` | 92 | Scene detection sensitivity (50-99, higher = fewer scenes) |
 | `--min-duration` | 3.0 | Minimum scene duration (seconds) |
 | `--secs-per-shot` | 2.5 | Seconds per scene in summary |
+| `--max-duration` | 60.0 | **Maximum summary duration** (e.g., 60 for Shorts) |
 | `--keep-audio` | false | Preserve audio using ffmpeg |
 | `--clean-input` | false | Re-encode input to fix codec issues |
 | `--best-keyframes` | false | Pick sharpest keyframes instead of midpoint |
@@ -217,14 +238,15 @@ Input Video
 
 ```
 automatic-video-summarization/
-├── summarize.py           # 🎯 Main entry point
+├── summarize.py           # 🎯 Main CLI entry point
+├── app.py                 # 🌐 Gradio Web UI
 ├── requirements.txt       # Dependencies
 ├── README.md
 ├── LICENSE
 ├── data/
 │   └── demo.mp4           # Sample input video
 ├── outputs/
-│   └── result_audio/      # Generated outputs
+│   └── result/            # Generated outputs
 │       ├── summary.mp4
 │       ├── summary.json
 │       ├── storyboard.png
@@ -239,7 +261,7 @@ automatic-video-summarization/
     ├── features.py        # Visual feature computation
     ├── distances.py       # Frame similarity metrics
     ├── shot_detection.py  # Scene boundary detection
-    ├── keyframes.py       # Keyframe selection + scoring
+    ├── keyframes.py       # Keyframe selection + highlight extraction
     ├── storyboard.py      # Storyboard generation
     ├── summary_video.py   # Video compilation (OpenCV)
     ├── av_concat.py       # Audio-preserving summary (ffmpeg)
@@ -254,6 +276,7 @@ automatic-video-summarization/
 
 | Use Case | Command |
 |----------|---------|
+| **YouTube Shorts** | `--max-duration 60 --threshold 95 --secs-per-shot 2.5 --keep-audio` |
 | **Lectures** | `--threshold 95 --min-duration 10 --secs-per-shot 5` |
 | **Meetings** | `--threshold 93 --min-duration 5 --secs-per-shot 3 --keep-audio` |
 | **Vlogs/YouTube** | `--threshold 90 --min-duration 2 --secs-per-shot 2` |
@@ -269,8 +292,10 @@ automatic-video-summarization/
 - [x] **M1**: Audio preservation (ffmpeg integration)
 - [x] **M1**: Quality-based keyframe selection
 - [x] **M1**: Input video cleaning/re-encoding
-- [ ] **M2**: Transcript-based chapter titles (Whisper)
-- [ ] **M3**: REST API + Web UI
+- [x] **M2**: Web UI (Gradio)
+- [x] **M2**: Max duration control (YouTube Shorts support)
+- [ ] **M3**: Transcript-based chapter titles (Whisper)
+- [ ] **M3**: REST API
 
 ---
 
@@ -278,12 +303,28 @@ automatic-video-summarization/
 
 | Issue | Solution |
 |-------|----------|
-| `ffmpeg not found` | Install ffmpeg and restart terminal |
+| `ffmpeg not found` | Install ffmpeg and restart terminal (see below) |
 | `H.264 mmco errors` | Use `--clean-input` to re-encode |
 | Too many scenes | Increase `--threshold` (e.g., 95-98) |
 | Too few scenes | Decrease `--threshold` (e.g., 85-90) |
-| Summary too long | Decrease `--secs-per-shot` |
+| Summary too long | Use `--max-duration 60` or decrease `--secs-per-shot` |
 | Blurry keyframes | Use `--best-keyframes` |
+| Web UI permission errors | Restart terminal or use CLI instead |
+
+### Windows: ffmpeg PATH Setup
+
+If ffmpeg was installed via winget but isn't found:
+
+```powershell
+# Find and add ffmpeg to PATH permanently
+$ffbin = (Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\Packages" -Recurse -Filter "ffmpeg.exe" -ErrorAction SilentlyContinue | Select-Object -First 1).DirectoryName
+if ($ffbin) {
+    [Environment]::SetEnvironmentVariable("Path", "$ffbin;" + [Environment]::GetEnvironmentVariable("Path", "User"), "User")
+    Write-Host "Added to PATH: $ffbin"
+}
+```
+
+Then restart your terminal.
 
 ---
 
@@ -295,8 +336,14 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ## 🤝 Contributing
 
-Contributions welcome! Please read the contributing guidelines first.
+Contributions welcome! Ideas for future improvements:
+- [ ] Parallel processing for faster analysis
+- [ ] CLIP embeddings for semantic scene understanding
+- [ ] Face detection for people-focused summaries
+- [ ] Audio analysis (speech/music detection)
+- [ ] GPU acceleration with CUDA
+- [ ] Batch processing multiple videos
 
 ---
 
-**Made with ❤️ for turning hours into minutes.**
+**Made with ❤️ for content creators**

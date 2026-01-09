@@ -23,9 +23,19 @@ def make_summary_video(
     out_path: Path,
     secs_per_shot: float = 1.5,
     out_width: int = 1280,
+    max_duration: float = 0.0,
 ) -> Tuple[float, int]:
     """
     Create a summary video by concatenating secs_per_shot seconds from the start of each shot.
+    
+    Args:
+        video_path: Input video file path
+        shots: List of Shot objects to include
+        out_path: Output video path
+        secs_per_shot: Seconds to include from each shot
+        out_width: Output video width
+        max_duration: Maximum total duration (0 = no limit)
+        
     Returns (fps, total_written_frames).
     """
     cap = cv2.VideoCapture(video_path)
@@ -37,6 +47,7 @@ def make_summary_video(
         raise RuntimeError("Invalid FPS from OpenCV.")
 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    max_frames = int(max_duration * fps) if max_duration > 0 else float('inf')
 
     # Prepare writer after reading the first frame (so we know output height)
     writer = None
@@ -60,8 +71,16 @@ def make_summary_video(
         return vw
 
     for shot in shots:
+        # Check if we've reached max duration
+        if written >= max_frames:
+            break
+            
         start_frame = int(round(shot.start_sec * fps))
         seg_frames = int(round(secs_per_shot * fps))
+        
+        # Limit segment frames to not exceed max_duration
+        remaining_frames = max_frames - written if max_duration > 0 else seg_frames
+        seg_frames = min(seg_frames, remaining_frames)
 
         # Make sure we don't exceed the shot end or video end
         end_frame_by_secs = start_frame + seg_frames
@@ -74,6 +93,8 @@ def make_summary_video(
         cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 
         for _ in range(end_frame - start_frame):
+            if written >= max_frames:
+                break
             ret, frame = cap.read()
             if not ret:
                 break

@@ -81,6 +81,7 @@ def summarize(
     threshold_percentile: float = 92.0,
     min_shot_duration: float = 3.0,
     secs_per_shot: float = 2.5,
+    max_summary_duration: float = 90.0,
     keep_audio: bool = False,
     clean_input: bool = False,
     best_keyframes: bool = False,
@@ -183,13 +184,38 @@ def summarize(
     plt.savefig(outdir / "analysis.png", dpi=120)
     plt.close()
     
-    # Highlight segments
+    # Highlight segments - limit to max_summary_duration
     highlights = select_highlight_segments(shots, frames, segment_duration=secs_per_shot)
     
+    # Debug: show actual highlight durations
+    raw_total = sum(h[1] - h[0] for h in highlights)
+    print(f"   Raw highlights: {len(highlights)} segments, total {raw_total:.1f}s")
+    
+    # Trim highlights to fit within max_summary_duration
+    if max_summary_duration and max_summary_duration > 0:
+        trimmed_highlights = []
+        total_duration = 0.0
+        for h in highlights:
+            seg_duration = h[1] - h[0]
+            if total_duration + seg_duration <= max_summary_duration:
+                trimmed_highlights.append(h)
+                total_duration += seg_duration
+            else:
+                # Add partial segment if there's room
+                remaining = max_summary_duration - total_duration
+                if remaining >= 1.0:  # At least 1 second
+                    trimmed_highlights.append((h[0], h[0] + remaining, h[2], h[3]))
+                    total_duration += remaining
+                break
+        highlights = trimmed_highlights
+        print(f"   Trimmed to {len(highlights)} segments ({total_duration:.1f}s) to fit {max_summary_duration}s limit")
+
     # Summary video
     summary_path = outdir / "summary.mp4"
     if keep_audio:
         segments = [(start, end) for start, end, _, _ in highlights]
+        actual_total = sum(end - start for start, end in segments)
+        print(f"   Creating audio summary with {len(segments)} segments, expected duration: {actual_total:.1f}s")
         success, msg = make_summary_with_audio(input_path, segments, summary_path)
         if not success:
             print(f"   Audio summary failed ({msg}), falling back to video-only...")
@@ -199,6 +225,7 @@ def summarize(
                 out_path=summary_path,
                 secs_per_shot=secs_per_shot,
                 out_width=1280,
+                max_duration=max_summary_duration,
             )
     else:
         make_summary_video(
@@ -207,6 +234,7 @@ def summarize(
             out_path=summary_path,
             secs_per_shot=secs_per_shot,
             out_width=1280,
+            max_duration=max_summary_duration,
         )
     
     # Calculate summary duration
@@ -291,6 +319,7 @@ Examples:
     parser.add_argument("--threshold", type=float, default=92.0, help="Scene detection sensitivity 50-99 (default: 92)")
     parser.add_argument("--min-duration", type=float, default=3.0, help="Minimum scene duration in seconds (default: 3)")
     parser.add_argument("--secs-per-shot", type=float, default=2.5, help="Seconds per scene in summary (default: 2.5)")
+    parser.add_argument("--max-duration", type=float, default=60.0, help="Maximum summary duration in seconds (default: 60 for Shorts)")
     parser.add_argument("--keep-audio", action="store_true", help="Preserve audio using ffmpeg (requires ffmpeg in PATH)")
     parser.add_argument("--clean-input", action="store_true", help="Re-encode input to avoid decode warnings")
     parser.add_argument("--best-keyframes", action="store_true", help="Pick sharp/low-motion keyframes instead of midpoint")
@@ -310,6 +339,7 @@ Examples:
             threshold_percentile=args.threshold,
             min_shot_duration=args.min_duration,
             secs_per_shot=args.secs_per_shot,
+            max_summary_duration=args.max_duration,
             keep_audio=args.keep_audio,
             clean_input=args.clean_input,
             best_keyframes=args.best_keyframes,

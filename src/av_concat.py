@@ -246,17 +246,18 @@ def make_summary_with_audio(
     failed_segments: List[int] = []
     
     try:
-        # Step 1: Cut each segment (try stream copy first)
+        # Step 1: Cut each segment - always re-encode for consistency
+        # Stream copy can cause issues when concatenating due to keyframe misalignment
         for i, (start, end) in enumerate(segments):
             seg_path = temp_dir / f"seg_{i:04d}.mp4"
             
-            # Try stream copy first (fast)
-            success = cut_segment(input_path, start, end, seg_path, stream_copy=True)
+            # Always re-encode to ensure uniform format for concatenation
+            success = cut_segment(input_path, start, end, seg_path, stream_copy=False)
             
             if not success:
-                # Fallback to re-encode (slower but more compatible)
-                logger.info(f"Segment {i}: stream copy failed, trying re-encode...")
-                success = cut_segment(input_path, start, end, seg_path, stream_copy=False)
+                # Try stream copy as fallback (might work for some videos)
+                logger.info(f"Segment {i}: re-encode failed, trying stream copy...")
+                success = cut_segment(input_path, start, end, seg_path, stream_copy=True)
             
             if success:
                 segment_paths.append(seg_path)
@@ -267,16 +268,17 @@ def make_summary_with_audio(
         if not segment_paths:
             return False, "All segment cuts failed"
         
-        # Step 2: Concatenate segments (try stream copy first)
-        success = concat_segments(segment_paths, output_path, stream_copy=True)
-        
-        if not success:
-            # Fallback to re-encode concat
-            logger.info("Stream copy concat failed, trying re-encode...")
-            success = concat_segments(segment_paths, output_path, stream_copy=False)
+        # Step 2: Concatenate segments - always re-encode for reliability
+        # Stream copy concat often drops video track due to codec mismatches
+        success = concat_segments(segment_paths, output_path, stream_copy=False)
         
         if not success:
             return False, "Concatenation failed"
+        
+        # Step 3: Verify output has video stream
+        if not _verify_video_stream(output_path):
+            logger.error("Output video missing video stream!")
+            return False, "Output video is audio-only (video stream missing)"
         
         msg = f"Created summary with {len(segment_paths)} segments"
         if failed_segments:
@@ -305,6 +307,13 @@ def get_video_duration(video_path: Path) -> Optional[float]:
     """
     ffprobe = shutil.which("ffprobe")
     if ffprobe is None:
+        # Try to find ffprobe on Windows
+        if os.name == 'nt':
+            for p in Path(os.environ.get('LOCALAPPDATA', '')).joinpath('Microsoft/WinGet/Packages').rglob('ffprobe.exe'):
+                ffprobe = str(p)
+                break
+    
+    if ffprobe is None:
         return None
     
     cmd = [
@@ -323,3 +332,38 @@ def get_video_duration(video_path: Path) -> Optional[float]:
         pass
     
     return None
+
+
+def _verify_video_stream(video_path: Path) -> bool:
+    """
+    Verify that a video file has both video and audio streams.
+    
+    Returns True if video stream exists, False otherwise.
+    """
+    ffprobe = shutil.which("ffprobe")
+    if ffprobe is None:
+        # Try to find ffprobe on Windows
+        if os.name == 'nt':
+            for p in Path(os.environ.get('LOCALAPPDATA', '')).joinpath('Microsoft/WinGet/Packages').rglob('ffprobe.exe'):
+                ffprobe = str(p)
+                break
+    
+    if ffprobe is None:
+        logger.warning("ffprobe not found, skipping video stream verification")
+        return True  # Assume OK if we can't check
+    
+    cmd = [
+        ffprobe,
+        "-v", "error",
+        "-select_streams", "v:0",
+        "-show_entries", "stream=codec_type",
+        "-of", "default=noprint_wrappers=1:nokey=1",
+        str(video_path)
+    ]
+    
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        return result.stdout.strip() == "video"
+    except Exception as e:
+        logger.warning(f"Video verification failed: {e}")
+        return True  # Assume OK on error

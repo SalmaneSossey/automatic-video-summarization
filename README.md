@@ -71,12 +71,15 @@ Then open http://localhost:7860 in your browser — drag & drop your video!
 
 #### Option B: 💻 Command Line
 ```bash
-# Basic (no audio)
+# Basic (with audio - now enabled by default!)
 python summarize.py --input your_video.mp4 --output results/
 
-# YouTube Shorts (60s max, with audio)
+# YouTube Shorts (60s max, optimized quality)
 python summarize.py --input your_video.mp4 --output results/ \
-    --max-duration 60 --keep-audio --best-keyframes
+    --max-duration 60 --best-keyframes
+
+# Disable audio if needed
+python summarize.py --input your_video.mp4 --output results/ --no-audio
 ```
 
 ---
@@ -107,9 +110,8 @@ python summarize.py \
     --input data/demo.mp4 \
     --output outputs/shorts \
     --max-duration 60 \
-    --threshold 95 \
+    --threshold 90 \
     --secs-per-shot 2.5 \
-    --keep-audio \
     --best-keyframes
 ```
 
@@ -151,11 +153,11 @@ python summarize.py \
 | `--input, -i` | required | Input video path |
 | `--output, -o` | `outputs/summary` | Output directory |
 | `--fps` | 4.0 | Analysis sampling rate |
-| `--threshold` | 92 | Scene detection sensitivity (50-99, higher = fewer scenes) |
+| `--threshold` | 87 | Scene detection sensitivity (50-99, lower = more scenes) |
 | `--min-duration` | 3.0 | Minimum scene duration (seconds) |
 | `--secs-per-shot` | 2.5 | Seconds per scene in summary |
-| `--max-duration` | 60.0 | **Maximum summary duration** (e.g., 60 for Shorts) |
-| `--keep-audio` | false | Preserve audio using ffmpeg |
+| `--max-duration` | 90.0 | **Maximum summary duration** (e.g., 60 for Shorts) |
+| `--no-audio` | false | Disable audio (audio is **enabled by default**) |
 | `--clean-input` | false | Re-encode input to fix codec issues |
 | `--best-keyframes` | false | Pick sharpest keyframes instead of midpoint |
 | `--transcribe` | false | **AI transcription** with Whisper (generates scene titles) |
@@ -216,7 +218,7 @@ Generate automatic transcripts and scene titles from speech:
 
 ```bash
 python summarize.py --input vlog.mp4 --output results/ \
-    --keep-audio --transcribe --whisper-model base
+    --transcribe --whisper-model base
 ```
 
 **Output includes:**
@@ -347,12 +349,12 @@ automatic-video-summarization/
 
 | Use Case | Command |
 |----------|---------|
-| **YouTube Shorts** | `--max-duration 60 --threshold 95 --secs-per-shot 2.5 --keep-audio` |
-| **Lectures** | `--threshold 95 --min-duration 10 --secs-per-shot 5` |
-| **Meetings** | `--threshold 93 --min-duration 5 --secs-per-shot 3 --keep-audio` |
-| **Vlogs/YouTube** | `--threshold 90 --min-duration 2 --secs-per-shot 2` |
-| **Surveillance** | `--threshold 98 --min-duration 30 --secs-per-shot 5` |
-| **Quick Preview** | `--fps 2 --threshold 90 --secs-per-shot 1` |
+| **YouTube Shorts** | `--max-duration 60 --threshold 90 --secs-per-shot 2.5` |
+| **Lectures** | `--threshold 92 --min-duration 10 --secs-per-shot 5` |
+| **Meetings** | `--threshold 88 --min-duration 5 --secs-per-shot 3` |
+| **Vlogs/YouTube** | `--threshold 85 --min-duration 2 --secs-per-shot 2` |
+| **Surveillance** | `--threshold 95 --min-duration 30 --secs-per-shot 5` |
+| **Quick Preview** | `--fps 2 --threshold 85 --secs-per-shot 1` |
 
 ---
 
@@ -378,10 +380,11 @@ automatic-video-summarization/
 |-------|----------|
 | `ffmpeg not found` | Install ffmpeg and restart terminal (see below) |
 | `H.264 mmco errors` | Use `--clean-input` to re-encode |
-| Too many scenes | Increase `--threshold` (e.g., 95-98) |
-| Too few scenes | Decrease `--threshold` (e.g., 85-90) |
+| Too many scenes | Increase `--threshold` (e.g., 92-95) |
+| Too few scenes | Decrease `--threshold` (e.g., 80-85) |
 | Summary too long | Use `--max-duration 60` or decrease `--secs-per-shot` |
 | Blurry keyframes | Use `--best-keyframes` |
+| No audio in output | Ensure ffmpeg is installed (audio is enabled by default) |
 | Web UI permission errors | Restart terminal or use CLI instead |
 
 ### Windows: ffmpeg PATH Setup

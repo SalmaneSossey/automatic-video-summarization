@@ -54,6 +54,7 @@ def process_video(
     keep_audio: bool,
     clean_input: bool,
     best_keyframes: bool,
+    transcribe: bool,
     progress=gr.Progress(track_tqdm=True),
 ):
     """
@@ -101,6 +102,7 @@ def process_video(
             keep_audio=audio_enabled,
             clean_input=clean_input,
             best_keyframes=best_keyframes,
+            transcribe=transcribe,
         )
         
         progress(0.95, desc="Preparing outputs...")
@@ -112,6 +114,7 @@ def process_video(
         manifest = result["manifest"]
         
         # Format summary stats
+        eval_score = manifest.get('evaluation', {}).get('summary_score', {}).get('overall', 0)
         stats_md = f"""
 ## ✅ Summarization Complete {fallback_note}
 
@@ -121,13 +124,40 @@ def process_video(
 | **Summary Duration** | {manifest['summary']['duration_hms']} ({manifest['summary']['duration_sec']}s) |
 | **Compression** | {manifest['summary']['compression_percent']:.0f}% |
 | **Scenes Detected** | {manifest['analysis']['scenes_detected']} |
+| **Quality Score** | {eval_score:.2f}/1.00 |
 | **Processing Time** | {result['elapsed_sec']:.1f}s |
 | **Audio** | {"Preserved" if audio_enabled else "Video-only"} |
 
-### Scene Breakdown
 """
+        # Add evaluation details
+        if 'evaluation' in manifest:
+            ev = manifest['evaluation']
+            stats_md += f"""
+### 📊 Evaluation Metrics
+| Metric | Value |
+|--------|-------|
+| Compression Ratio | {ev['compression']['compression_ratio']:.1f}:1 |
+| Timeline Coverage | {ev['coverage']['timeline_coverage_percent']:.1f}% |
+| Distribution Uniformity | {ev['distribution']['uniformity']:.2f} |
+| Avg Quality Score | {ev['quality_scores']['mean']:.2f} |
+
+"""
+        # Add transcript if available
+        if 'transcript' in manifest:
+            tr = manifest['transcript']
+            stats_md += f"""
+### 🎤 Transcript Summary
+- **Language**: {tr['summary']['language']}
+- **Words**: {tr['summary']['total_words']}
+- **Speech Duration**: {tr['summary']['speech_duration_sec']}s
+
+"""
+        
+        stats_md += "### Scene Breakdown\n"
         for scene in manifest["scenes"]:
-            stats_md += f"- **Scene {scene['index']}**: {scene['start_hms']} → {scene['end_hms']} ({scene['duration_sec']}s) - Quality: {scene['quality_score']:.2f}\n"
+            title = scene.get('title', '')
+            title_str = f' - "{title[:30]}..."' if title and len(title) > 30 else (f' - "{title}"' if title else '')
+            stats_md += f"- **Scene {scene['index']}**: {scene['start_hms']} → {scene['end_hms']} ({scene['duration_sec']}s) - Q:{scene['quality_score']:.2f}{title_str}\n"
         
         progress(1.0, desc="Done!")
         
@@ -295,6 +325,13 @@ with gr.Blocks(title="Automatic Video Summarization") as app:
                     info="Re-encode input to fix codec issues (slower)",
                 )
             
+            with gr.Accordion("AI Features", open=False):
+                transcribe_checkbox = gr.Checkbox(
+                    value=False,
+                    label="🎤 Transcribe Audio (Whisper)",
+                    info="Generate transcript with scene titles (requires openai-whisper)",
+                )
+            
             summarize_btn = gr.Button(
                 "🚀 Summarize Video",
                 variant="primary",
@@ -338,6 +375,7 @@ with gr.Blocks(title="Automatic Video Summarization") as app:
             keep_audio_checkbox,
             clean_input_checkbox,
             best_keyframes_checkbox,
+            transcribe_checkbox,
         ],
         outputs=[
             output_video,
@@ -357,6 +395,7 @@ with gr.Blocks(title="Automatic Video Summarization") as app:
     - **Shorter summary**: Reduce seconds per scene
     - **Codec errors**: Enable "Clean Input" option
     - **No audio**: Ensure ffmpeg is installed and "Keep Audio" is checked
+    - **Transcription**: Enable "Transcribe Audio" for AI-generated scene titles (slower, requires openai-whisper)
     """)
 
 

@@ -43,6 +43,7 @@ from src.storyboard import save_storyboard
 from src.summary_video import make_summary_video
 from src.av_concat import make_summary_with_audio
 from src.preprocessing import ensure_clean_video
+from src.evaluation import generate_evaluation_report, format_evaluation_report
 
 
 def print_banner():
@@ -50,6 +51,35 @@ def print_banner():
     print("   AUTOMATIC VIDEO SUMMARIZATION")
     print("   Transform long videos into concise summaries")
     print("="*60 + "\n")
+
+
+def _get_duration_ffprobe(video_path: str) -> float:
+    """Get video duration using ffprobe (more reliable for some containers)."""
+    import subprocess
+    import shutil
+    import os
+    
+    # Find ffprobe
+    ffprobe = shutil.which("ffprobe")
+    if not ffprobe and os.name == 'nt':
+        # Search Windows locations
+        from pathlib import Path
+        for p in Path(os.environ.get('LOCALAPPDATA', '')).joinpath('Microsoft/WinGet/Packages').rglob('ffprobe.exe'):
+            ffprobe = str(p)
+            break
+    
+    if not ffprobe:
+        return -1.0
+    
+    try:
+        result = subprocess.run(
+            [ffprobe, '-v', 'error', '-show_entries', 'format=duration',
+             '-of', 'default=noprint_wrappers=1:nokey=1', video_path],
+            capture_output=True, text=True, timeout=30
+        )
+        return float(result.stdout.strip())
+    except:
+        return -1.0
 
 
 def get_video_info(video_path: str) -> dict:
@@ -63,11 +93,22 @@ def get_video_info(video_path: str) -> dict:
     }
     info["duration_sec"] = info["frame_count"] / info["fps"] if info["fps"] > 0 else 0
     cap.release()
+    
+    # If OpenCV failed to get duration, try ffprobe
+    if info["duration_sec"] <= 0 or info["frame_count"] <= 0:
+        ffprobe_duration = _get_duration_ffprobe(video_path)
+        if ffprobe_duration > 0:
+            info["duration_sec"] = ffprobe_duration
+            if info["fps"] > 0:
+                info["frame_count"] = int(ffprobe_duration * info["fps"])
+    
     return info
 
 
 def format_time(seconds: float) -> str:
     """Format seconds as HH:MM:SS."""
+    if seconds < 0:
+        return "-1:59:59"
     h = int(seconds // 3600)
     m = int((seconds % 3600) // 60)
     s = int(seconds % 60)
@@ -85,6 +126,8 @@ def summarize(
     keep_audio: bool = False,
     clean_input: bool = False,
     best_keyframes: bool = False,
+    transcribe: bool = False,
+    whisper_model: str = "base",
 ) -> dict:
     """
     Main summarization pipeline.
@@ -108,6 +151,23 @@ def summarize(
     video_info = get_video_info(str(input_path))
     print(f"   Duration: {format_time(video_info['duration_sec'])} ({video_info['duration_sec']:.1f}s)")
     print(f"   Resolution: {video_info['width']}x{video_info['height']} @ {video_info['fps']:.1f} fps")
+    
+    # Optional: Transcription using Whisper
+    transcript = None
+    if transcribe:
+        print("\n[0/5] Transcribing audio with Whisper...")
+        try:
+            from src.transcription import transcribe_video, get_transcript_summary
+            transcript = transcribe_video(str(input_path), model_size=whisper_model)
+            if transcript:
+                ts = get_transcript_summary(transcript)
+                print(f"   Language: {ts['language']}, Words: {ts['total_words']}, Speech: {ts['speech_duration_sec']}s")
+            else:
+                print("   No transcript generated (audio extraction failed)")
+        except ImportError:
+            print("   Whisper not installed. Run: pip install openai-whisper")
+        except Exception as e:
+            print(f"   Transcription failed: {e}")
     
     # Step 1: Sample frames
     print("\n[1/5] Sampling frames...")
@@ -275,7 +335,7 @@ def summarize(
     
     for i, (shot, kf_path) in enumerate(zip(shots, keyframe_paths)):
         highlight = highlights[i] if i < len(highlights) else (shot.start_sec, shot.end_sec, 0.5, i)
-        manifest["scenes"].append({
+        scene_data = {
             "index": i + 1,
             "start_sec": round(shot.start_sec, 2),
             "end_sec": round(shot.end_sec, 2),
@@ -284,7 +344,30 @@ def summarize(
             "duration_sec": round(shot.end_sec - shot.start_sec, 2),
             "keyframe": kf_path,
             "quality_score": round(highlight[2], 3),
-        })
+        }
+        manifest["scenes"].append(scene_data)
+    
+    # Add transcript to scenes if available
+    if transcript:
+        from src.transcription import generate_scene_titles, get_transcript_summary
+        manifest["scenes"] = generate_scene_titles(transcript, manifest["scenes"])
+        manifest["transcript"] = {
+            "full_text": transcript.get("text", "")[:2000] + "..." if len(transcript.get("text", "")) > 2000 else transcript.get("text", ""),
+            "summary": get_transcript_summary(transcript),
+        }
+    
+    # Generate evaluation report
+    evaluation = generate_evaluation_report(
+        original_duration=video_duration,
+        summary_duration=summary_info['duration_sec'],
+        scenes=manifest["scenes"],
+    )
+    manifest["evaluation"] = evaluation
+    
+    # Save evaluation report as text
+    eval_report = format_evaluation_report(evaluation)
+    with open(outdir / "evaluation.txt", "w", encoding="utf-8") as f:
+        f.write(eval_report)
     
     # Save manifest
     with open(outdir / "summary.json", "w", encoding="utf-8") as f:
@@ -323,6 +406,8 @@ Examples:
     parser.add_argument("--keep-audio", action="store_true", help="Preserve audio using ffmpeg (requires ffmpeg in PATH)")
     parser.add_argument("--clean-input", action="store_true", help="Re-encode input to avoid decode warnings")
     parser.add_argument("--best-keyframes", action="store_true", help="Pick sharp/low-motion keyframes instead of midpoint")
+    parser.add_argument("--transcribe", action="store_true", help="Generate transcript using Whisper AI (requires openai-whisper)")
+    parser.add_argument("--whisper-model", default="base", choices=["tiny", "base", "small", "medium", "large"], help="Whisper model size (default: base)")
     
     args = parser.parse_args()
     
@@ -343,6 +428,8 @@ Examples:
             keep_audio=args.keep_audio,
             clean_input=args.clean_input,
             best_keyframes=args.best_keyframes,
+            transcribe=args.transcribe,
+            whisper_model=args.whisper_model,
         )
         
         m = result["manifest"]
@@ -353,10 +440,16 @@ Examples:
         print(f"   Summary:  {m['summary']['duration_hms']} ({m['summary']['duration_sec']}s)")
         print(f"   Compression: {m['summary']['compression_percent']:.0f}%")
         print(f"   Scenes:   {m['analysis']['scenes_detected']}")
+        if 'evaluation' in m:
+            score = m['evaluation']['summary_score']['overall']
+            print(f"   Quality:  {score:.2f}/1.00")
+        if 'transcript' in m:
+            print(f"   Transcript: {m['transcript']['summary']['total_words']} words")
         print(f"   Time:     {result['elapsed_sec']:.1f}s")
         print(f"\n📁 Outputs: {result['output_dir']}/")
         print("   ├── summary.mp4      (condensed video)")
         print("   ├── summary.json     (structured metadata)")
+        print("   ├── evaluation.txt   (quality metrics)")
         print("   ├── storyboard.png   (visual overview)")
         print("   ├── analysis.png     (detection chart)")
         print("   └── keyframes/       (representative frames)")

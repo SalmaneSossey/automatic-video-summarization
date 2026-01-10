@@ -9,6 +9,7 @@ from __future__ import annotations
 import subprocess
 import tempfile
 import shutil
+import os
 from pathlib import Path
 from typing import List, Tuple, Optional
 import logging
@@ -16,9 +17,39 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _find_ffmpeg_windows() -> Optional[str]:
+    """Search common Windows locations for ffmpeg."""
+    possible_paths = [
+        # WinGet installation
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "WinGet" / "Packages",
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "WinGet" / "Links",
+        # Common manual installations
+        Path("C:/ffmpeg/bin"),
+        Path("C:/Program Files/ffmpeg/bin"),
+        Path(os.environ.get("USERPROFILE", "")) / "ffmpeg" / "bin",
+    ]
+    
+    for base_path in possible_paths:
+        if not base_path.exists():
+            continue
+        # Search for ffmpeg.exe recursively (for WinGet nested structure)
+        for ffmpeg in base_path.rglob("ffmpeg.exe"):
+            ffmpeg_dir = str(ffmpeg.parent)
+            # Add to PATH for this session
+            os.environ["PATH"] = ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
+            logger.info(f"Found ffmpeg at: {ffmpeg_dir}")
+            return str(ffmpeg)
+    return None
+
+
 def _check_ffmpeg() -> str:
     """Check if ffmpeg is available and return its path."""
     ffmpeg = shutil.which("ffmpeg")
+    
+    # If not found, try Windows-specific locations
+    if ffmpeg is None and os.name == 'nt':
+        ffmpeg = _find_ffmpeg_windows()
+    
     if ffmpeg is None:
         raise RuntimeError(
             "ffmpeg not found. Please install ffmpeg and add it to PATH.\n"

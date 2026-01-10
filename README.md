@@ -29,7 +29,9 @@ A production-ready tool that automatically detects scene changes, extracts repre
 | 🖼️ **Keyframe Extraction** | Automatically selects the most representative frame from each scene |
 | 🔊 **Audio Preservation** | Summary video keeps original audio (requires ffmpeg) |
 | ⏱️ **Duration Control** | Set maximum summary length (e.g., 60s for YouTube Shorts) |
-| 🌐 **Web UI** | Gradio-based interface — drag & drop, no CLI needed |
+| � **AI Transcription** | Whisper-powered speech recognition with auto scene titles |
+| 📈 **Evaluation Metrics** | Academic-grade quality scores and analysis reports |
+| �🌐 **Web UI** | Gradio-based interface — drag & drop, no CLI needed |
 | 📊 **Structured Output** | JSON manifest with timestamps, durations, and quality scores |
 | 🎥 **Summary Video** | Condensed MP4 preserving the essence of the original |
 | 📋 **Storyboard** | Visual grid overview of all detected scenes |
@@ -51,6 +53,7 @@ pip install -r requirements.txt
 - numpy  
 - matplotlib
 - gradio (for Web UI)
+- openai-whisper (for AI transcription)
 
 ### 2. Install ffmpeg (for audio support)
 
@@ -155,6 +158,8 @@ python summarize.py \
 | `--keep-audio` | false | Preserve audio using ffmpeg |
 | `--clean-input` | false | Re-encode input to fix codec issues |
 | `--best-keyframes` | false | Pick sharpest keyframes instead of midpoint |
+| `--transcribe` | false | **AI transcription** with Whisper (generates scene titles) |
+| `--whisper-model` | base | Whisper model size: tiny, base, small, medium, large |
 
 ---
 
@@ -205,7 +210,70 @@ python summarize.py \
 
 ---
 
-## 🏗️ Architecture
+## � AI Transcription (Whisper)
+
+Generate automatic transcripts and scene titles from speech:
+
+```bash
+python summarize.py --input vlog.mp4 --output results/ \
+    --keep-audio --transcribe --whisper-model base
+```
+
+**Output includes:**
+- Full transcript in `summary.json`
+- Auto-generated scene titles from speech content
+- Language detection
+- Word count and speech duration stats
+
+**Whisper Model Sizes:**
+| Model | Speed | Accuracy | VRAM |
+|-------|-------|----------|------|
+| tiny | Fastest | Good | ~1GB |
+| base | Fast | Better | ~1GB |
+| small | Medium | Good | ~2GB |
+| medium | Slow | Great | ~5GB |
+| large | Slowest | Best | ~10GB |
+
+---
+
+## 📈 Evaluation Metrics
+
+Every summarization generates an `evaluation.txt` report:
+
+```
+============================================================
+   VIDEO SUMMARIZATION EVALUATION REPORT
+============================================================
+
+📊 COMPRESSION METRICS
+   Original Duration:  1238.37s
+   Summary Duration:   30.26s
+   Compression Ratio:  40.92:1
+   Reduction:          97.6%
+
+📍 COVERAGE METRICS
+   Timeline Coverage:  100.0%
+   Number of Scenes:   71
+   Avg Scene Duration: 0.43s
+
+📈 DISTRIBUTION ANALYSIS
+   Uniformity Score:   0.451 (0-1, higher=better)
+   Coverage Gaps:      0 bins
+   Temporal Spread:    0.972
+
+⭐ QUALITY METRICS
+   Mean Quality:       0.508
+   Quality Std Dev:    0.016
+   Quality Range:      [0.5, 0.552]
+
+🏆 OVERALL SCORE
+   Score:              0.62 / 1.00
+============================================================
+```
+
+---
+
+## �🏗️ Architecture
 
 ```
 Input Video
@@ -249,6 +317,7 @@ automatic-video-summarization/
 │   └── result/            # Generated outputs
 │       ├── summary.mp4
 │       ├── summary.json
+│       ├── evaluation.txt  # 📈 Quality metrics report
 │       ├── storyboard.png
 │       ├── analysis.png
 │       └── keyframes/
@@ -266,6 +335,8 @@ automatic-video-summarization/
     ├── summary_video.py   # Video compilation (OpenCV)
     ├── av_concat.py       # Audio-preserving summary (ffmpeg)
     ├── preprocessing.py   # Video cleaning/re-encoding
+    ├── transcription.py   # 🎤 Whisper AI transcription
+    ├── evaluation.py      # 📈 Quality metrics & scoring
     ├── summary_manifest.py# JSON manifest generation
     └── io_outputs.py      # File I/O utilities
 ```
@@ -294,8 +365,10 @@ automatic-video-summarization/
 - [x] **M1**: Input video cleaning/re-encoding
 - [x] **M2**: Web UI (Gradio)
 - [x] **M2**: Max duration control (YouTube Shorts support)
-- [ ] **M3**: Transcript-based chapter titles (Whisper)
-- [ ] **M3**: REST API
+- [x] **M3**: AI Transcription with Whisper
+- [x] **M3**: Evaluation metrics & quality scoring
+- [ ] **M4**: CLIP embeddings for semantic understanding
+- [ ] **M4**: REST API
 
 ---
 
@@ -337,13 +410,13 @@ MIT License - See [LICENSE](LICENSE) for details.
 ## 🤝 Contributing
 
 Contributions welcome! Ideas for future improvements:
-- [ ] Parallel processing for faster analysis
 - [ ] CLIP embeddings for semantic scene understanding
 - [ ] Face detection for people-focused summaries
-- [ ] Audio analysis (speech/music detection)
+- [ ] Speaker diarization (who said what)
 - [ ] GPU acceleration with CUDA
 - [ ] Batch processing multiple videos
+- [ ] REST API for integration
 
 ---
 
-**Made with ❤️ for content creators**
+**Made with ❤️ for content creators and AI researchers**

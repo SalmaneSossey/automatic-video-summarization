@@ -1,12 +1,26 @@
 # 🎬 Automatic Video Summarization
 
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](Dockerfile)
+[![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)](api.py)
+[![Gradio](https://img.shields.io/badge/Gradio-Web_UI-F97316?logo=gradio&logoColor=white)](app.py)
+
 **Transform long videos into concise, browsable summaries — perfect for YouTube Shorts!**
 
-A production-ready tool that automatically detects scene changes, extracts representative keyframes, and generates condensed summary videos **with audio** — all controllable via CLI or a modern **Web UI**.
+A production-ready tool that automatically detects scene changes, extracts representative keyframes, and generates condensed summary videos **with audio** — controllable via CLI, **Web UI**, or **REST API**.
+
+<p align="center">
+  <a href="http://localhost:7860"><strong>🚀 Try Live Demo</strong></a> •
+  <a href="#-docker-quickstart"><strong>🐳 Docker</strong></a> •
+  <a href="#-rest-api"><strong>📡 API</strong></a> •
+  <a href="landing/index.html"><strong>🌐 Landing Page</strong></a>
+</p>
 
 ---
 
 ## 🎥 Demo Output
+
 
 ### Storyboard (Visual Overview)
 ![Storyboard](docs/demo/storyboard.png)
@@ -95,6 +109,66 @@ python app.py
 - ⏱️ Max duration control (perfect for Shorts)
 - 📥 Download summary video, storyboard, and manifest
 - 🔄 Real-time processing feedback
+
+---
+
+## 🐳 Docker Quickstart
+
+Run with a single command — no installation required:
+
+```bash
+# Build and run
+docker-compose up
+
+# Or build manually
+docker build -t video-summarizer .
+docker run -p 7860:7860 -v ./outputs:/app/outputs video-summarizer
+```
+
+Then open http://localhost:7860 in your browser.
+
+---
+
+## 📡 REST API
+
+Full-featured REST API for integration with other services:
+
+```bash
+# Start the API server
+python api.py
+
+# Or with Docker
+docker-compose --profile api up
+```
+
+**API Documentation:** http://localhost:8000/docs (Swagger UI)
+
+### Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/summarize` | Upload video and start summarization |
+| `GET` | `/api/status/{job_id}` | Check job status |
+| `GET` | `/api/result/{job_id}/video` | Download summary video |
+| `GET` | `/api/result/{job_id}/storyboard` | Download storyboard |
+| `GET` | `/api/result/{job_id}/manifest` | Get JSON manifest |
+| `POST` | `/api/analyze` | Analyze video metadata |
+| `GET` | `/health` | Health check |
+
+### Example Usage
+
+```bash
+# Upload and summarize
+curl -X POST "http://localhost:8000/api/summarize" \
+  -F "video=@your_video.mp4" \
+  -F "max_summary_duration=60"
+
+# Check status
+curl "http://localhost:8000/api/status/{job_id}"
+
+# Download result
+curl -O "http://localhost:8000/api/result/{job_id}/video"
+```
 
 ---
 

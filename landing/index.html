@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Summarizer | Transform Long Videos into Shorts</title>
+    <meta name="description"
+        content="AI-powered video summarization tool. Transform hours of footage into engaging 60-second summaries perfect for YouTube Shorts, TikTok, and more.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Animated Background -->
+    <div class="bg-gradient"></div>
+    <div class="bg-grid"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <span class="logo-icon">🎬</span>
+                <span class="logo-text">VideoSummarizer</span>
+            </a>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How it Works</a>
+                <a href="#demo">Demo</a>
+                <a href="https://github.com/SalmaneSossey/automatic-video-summarization" class="nav-btn"
+                    target="_blank">
+                    <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                AI-Powered Video Processing
+            </div>
+            <h1 class="hero-title">
+                Transform Long Videos into
+                <span class="gradient-text">Engaging Shorts</span>
+            </h1>
+            <p class="hero-description">
+                Automatically detect scenes, extract key moments, and generate
+                polished summaries with audio — perfect for YouTube Shorts, TikTok,
+                and social media. Powered by advanced computer vision.
+            </p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-value">93%</span>
+                    <span class="stat-label">Compression</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-value">60s</span>
+                    <span class="stat-label">Output Length</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-value">🔊</span>
+                    <span class="stat-label">Audio Preserved</span>
+                </div>
+            </div>
+            <div class="hero-buttons">
+                <a href="http://localhost:7860" class="btn btn-primary" target="_blank">
+                    <span class="btn-icon">🚀</span>
+                    Try Live Demo
+                </a>
+                <a href="https://github.com/SalmaneSossey/automatic-video-summarization" class="btn btn-secondary"
+                    target="_blank">
+                    <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                    </svg>
+                    View on GitHub
+                </a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="visual-card">
+                <div class="card-header">
+                    <div class="card-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span class="card-title">summary.mp4</span>
+                </div>
+                <div class="card-content">
+                    <div class="video-preview">
+                        <div class="play-button">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </div>
+                        <div class="timeline">
+                            <div class="timeline-progress"></div>
+                            <div class="timeline-markers">
+                                <span></span><span></span><span></span><span></span><span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="video-stats">
+                        <div class="video-stat">
+                            <span class="vs-label">Original</span>
+                            <span class="vs-value">15:00</span>
+                        </div>
+                        <div class="vs-arrow">→</div>
+                        <div class="video-stat">
+                            <span class="vs-label">Summary</span>
+                            <span class="vs-value highlight">0:60</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-tag">Features</span>
+                <h2 class="section-title">Everything You Need</h2>
+                <p class="section-description">
+                    Powerful algorithms combined with an intuitive interface
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Scene Detection</h3>
+                    <p>Advanced visual change detection using color (HSV) and edge analysis to identify distinct scenes
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🖼️</div>
+                    <h3>Smart Keyframes</h3>
+                    <p>Automatically selects the sharpest, most representative frame from each detected scene</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔊</div>
+                    <h3>Audio Preservation</h3>
+                    <p>Summary videos keep the original audio track intact using ffmpeg integration</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⏱️</div>
+                    <h3>Duration Control</h3>
+                    <p>Set maximum summary length — perfect for 60-second YouTube Shorts or TikTok videos</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎤</div>
+                    <h3>AI Transcription</h3>
+                    <p>Whisper-powered speech recognition with automatic scene titles generation</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Quality Metrics</h3>
+                    <p>Academic-grade evaluation scores and detailed analysis reports for every summary</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-tag">Process</span>
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-description">
+                    From upload to polished summary in seconds
+                </p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Upload</h3>
+                        <p>Drag & drop your video into the web interface or use the CLI</p>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Analyze</h3>
+                        <p>AI detects scene changes using color histograms and edge detection</p>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Extract</h3>
+                        <p>Key moments from each scene are selected based on quality scores</p>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Generate</h3>
+                        <p>Polished summary video with audio, storyboard, and JSON manifest</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-tag">See It In Action</span>
+                <h2 class="section-title">Demo Output</h2>
+                <p class="section-description">
+                    Real results from a 15-minute video
+                </p>
+            </div>
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <h3>📋 Storyboard</h3>
+                    <p>Visual overview of all detected scenes</p>
+                    <div class="demo-image-container">
+                        <img src="../docs/demo/storyboard.png" alt="Storyboard output" class="demo-image">
+                    </div>
+                </div>
+                <div class="demo-card">
+                    <h3>📈 Analysis</h3>
+                    <p>Scene detection visualization</p>
+                    <div class="demo-image-container">
+                        <img src="../docs/demo/analysis.png" alt="Analysis output" class="demo-image">
+                    </div>
+                </div>
+            </div>
+            <div class="demo-cta">
+                <a href="http://localhost:7860" class="btn btn-primary btn-large" target="_blank">
+                    <span class="btn-icon">🎬</span>
+                    Try It Yourself
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section class="tech-stack">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-tag">Built With</span>
+                <h2 class="section-title">Technology Stack</h2>
+            </div>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <div class="tech-icon">🐍</div>
+                    <span>Python</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">📹</div>
+                    <span>OpenCV</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">🔊</div>
+                    <span>FFmpeg</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">🤖</div>
+                    <span>Whisper AI</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">🌐</div>
+                    <span>Gradio</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">📊</div>
+                    <span>NumPy</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="section-container">
+            <div class="cta-content">
+                <h2>Ready to Transform Your Videos?</h2>
+                <p>Start creating engaging summaries in seconds</p>
+                <div class="cta-buttons">
+                    <a href="http://localhost:7860" class="btn btn-primary btn-large" target="_blank">
+                        Launch Web UI
+                    </a>
+                    <a href="https://github.com/SalmaneSossey/automatic-video-summarization"
+                        class="btn btn-outline btn-large" target="_blank">
+                        Star on GitHub ⭐
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-icon">🎬</span>
+                    <span class="logo-text">VideoSummarizer</span>
+                </div>
+                <p class="footer-tagline">Made with ❤️ for content creators and AI researchers</p>
+            </div>
+            <div class="footer-links">
+                <a href="https://github.com/SalmaneSossey/automatic-video-summarization" target="_blank">GitHub</a>
+                <a href="https://github.com/SalmaneSossey/automatic-video-summarization/blob/main/LICENSE"
+                    target="_blank">MIT License</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Navbar scroll effect
+        const navbar = document.querySelector('.navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .step, .demo-card, .tech-item').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+
+</html>

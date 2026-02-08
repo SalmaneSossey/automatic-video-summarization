@@ -236,24 +236,114 @@ def get_video_preview(video_file):
         return f"Could not read video: {e}"
 
 
-# Custom CSS for better styling
+# Custom CSS for modern dark theme styling
 custom_css = """
+/* Dark theme with gradient accents */
 .gradio-container {
     max-width: 1200px !important;
+    background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%) !important;
 }
-.output-video {
-    max-height: 480px;
-}
+
+/* Title styling */
 #title {
     text-align: center;
     margin-bottom: 0.5em;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
 }
+
 #subtitle {
     text-align: center;
-    color: #666;
+    color: rgba(255, 255, 255, 0.7) !important;
     margin-bottom: 1.5em;
+    font-size: 1.1rem !important;
+}
+
+/* Card styling */
+.gr-panel {
+    background: rgba(20, 20, 35, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(10px);
+}
+
+/* Button styling */
+.gr-button-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3) !important;
+}
+
+.gr-button-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4) !important;
+}
+
+/* Slider styling */
+.gr-slider input[type="range"] {
+    accent-color: #8b5cf6 !important;
+}
+
+/* Tab styling */
+.tabs {
+    border-radius: 12px !important;
+    overflow: hidden;
+}
+
+.tab-nav button {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    transition: all 0.2s ease !important;
+}
+
+.tab-nav button.selected {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+    color: white !important;
+}
+
+/* Video output */
+.output-video {
+    max-height: 480px;
+    border-radius: 12px !important;
+    overflow: hidden;
+}
+
+/* Accordion */
+.gr-accordion {
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* Checkbox styling */
+.gr-checkbox input[type="checkbox"]:checked {
+    background-color: #8b5cf6 !important;
+}
+
+/* Text inputs */
+.gr-textbox, .gr-dropdown {
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Footer badge */
+.footer-badge {
+    text-align: center;
+    padding: 1rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
 }
 """
+
 
 # Build the Gradio interface
 with gr.Blocks(title="Automatic Video Summarization") as app:

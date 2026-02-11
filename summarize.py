@@ -119,11 +119,11 @@ def summarize(
     input_path: str,
     output_dir: str,
     fps_sample: float = 4.0,
-    threshold_percentile: float = 92.0,
+    threshold_percentile: float = 87.0,
     min_shot_duration: float = 3.0,
     secs_per_shot: float = 2.5,
     max_summary_duration: float = 90.0,
-    keep_audio: bool = False,
+    keep_audio: bool = True,
     clean_input: bool = False,
     best_keyframes: bool = False,
     transcribe: bool = False,
@@ -399,11 +399,11 @@ Examples:
     parser.add_argument("--input", "-i", required=True, help="Input video path")
     parser.add_argument("--output", "-o", default="outputs/summary", help="Output directory")
     parser.add_argument("--fps", type=float, default=4.0, help="Analysis sampling rate (default: 4)")
-    parser.add_argument("--threshold", type=float, default=92.0, help="Scene detection sensitivity 50-99 (default: 92)")
+    parser.add_argument("--threshold", type=float, default=87.0, help="Scene detection sensitivity 50-99 (default: 87, lower = more scenes)")
     parser.add_argument("--min-duration", type=float, default=3.0, help="Minimum scene duration in seconds (default: 3)")
     parser.add_argument("--secs-per-shot", type=float, default=2.5, help="Seconds per scene in summary (default: 2.5)")
-    parser.add_argument("--max-duration", type=float, default=60.0, help="Maximum summary duration in seconds (default: 60 for Shorts)")
-    parser.add_argument("--keep-audio", action="store_true", help="Preserve audio using ffmpeg (requires ffmpeg in PATH)")
+    parser.add_argument("--max-duration", type=float, default=90.0, help="Maximum summary duration in seconds (default: 90)")
+    parser.add_argument("--no-audio", action="store_true", help="Disable audio preservation (audio enabled by default)")
     parser.add_argument("--clean-input", action="store_true", help="Re-encode input to avoid decode warnings")
     parser.add_argument("--best-keyframes", action="store_true", help="Pick sharp/low-motion keyframes instead of midpoint")
     parser.add_argument("--transcribe", action="store_true", help="Generate transcript using Whisper AI (requires openai-whisper)")
@@ -425,7 +425,7 @@ Examples:
             min_shot_duration=args.min_duration,
             secs_per_shot=args.secs_per_shot,
             max_summary_duration=args.max_duration,
-            keep_audio=args.keep_audio,
+            keep_audio=not args.no_audio,  # Invert no_audio flag
             clean_input=args.clean_input,
             best_keyframes=args.best_keyframes,
             transcribe=args.transcribe,

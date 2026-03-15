@@ -1,0 +1,78 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Install Dependencies",
+      "type": "shell",
+      "command": "pip install -r requirements.txt",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Install ffmpeg (macOS)",
+      "type": "shell",
+      "command": "brew install ffmpeg",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Install ffmpeg (Linux)",
+      "type": "shell",
+      "command": "sudo apt install -y ffmpeg",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Launch Web UI",
+      "type": "shell",
+      "command": "${command:python.interpreterPath} app.py",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Launch REST API",
+      "type": "shell",
+      "command": "${command:python.interpreterPath} api.py",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Summarize Video (CLI)",
+      "type": "shell",
+      "command": "${command:python.interpreterPath} summarize.py --input ${input:videoPath} --output outputs/summary",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "videoPath",
+      "type": "promptString",
+      "description": "Path to the input video file (e.g., data/demo.mp4)"
+    }
+  ]
+}

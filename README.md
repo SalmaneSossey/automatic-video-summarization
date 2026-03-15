@@ -54,6 +54,62 @@ A production-ready tool that automatically detects scene changes, extracts repre
 
 ---
 
+## 💻 VS Code Integration
+
+Open the project in VS Code for a first-class development experience:
+
+```bash
+code .
+```
+
+**Install recommended extensions** when VS Code prompts you (or via the Extensions view → "Show Recommended Extensions"). Key extensions:
+- **Python** + **Pylance** — language support and IntelliSense
+- **Debugpy** — full debugging support
+
+### Run & Debug from VS Code
+
+Use the **Run and Debug** panel (`Ctrl+Shift+D` on Windows/Linux, `⇧⌘D` on macOS) to launch any of the pre-configured profiles:
+
+| Configuration | Description |
+|---------------|-------------|
+| 🌐 Launch Web UI (Gradio) | Start the drag-and-drop web interface at http://localhost:7860 |
+| 📡 Launch REST API (FastAPI) | Start the REST API server at http://localhost:8000 |
+| 🎬 Summarize Video (CLI) | Run the CLI summarizer — you will be prompted for a video path |
+| 🎬 Summarize Video – YouTube Shorts | Pre-tuned settings for 60-second Shorts |
+| 🎤 Summarize Video with Transcription | Summarize + Whisper transcription in one shot |
+| 🔍 Inspect Video Metadata | Quick metadata check on any video file |
+
+### VS Code Tasks
+
+Common operations are available as **Tasks** (`Ctrl+Shift+P` on Windows/Linux, `⇧⌘P` on macOS → *Tasks: Run Task*):
+
+| Task | Description |
+|------|-------------|
+| Install Dependencies | `pip install -r requirements.txt` |
+| Install ffmpeg (macOS) | `brew install ffmpeg` |
+| Install ffmpeg (Linux) | `sudo apt install ffmpeg` |
+| Launch Web UI | Start the Gradio interface |
+| Launch REST API | Start the FastAPI server |
+| Summarize Video (CLI) | Run the CLI summarizer |
+
+### Python Environment
+
+The workspace is configured to use `.venv/` as the virtual environment. Create it once:
+
+```bash
+python -m venv .venv
+# macOS/Linux:
+source .venv/bin/activate
+# Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
+```
+
+VS Code will automatically activate `.venv` in new terminals once the interpreter is selected.
+
+---
+
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies

@@ -1,0 +1,102 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "🌐 Launch Web UI (Gradio)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/app.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      }
+    },
+    {
+      "name": "📡 Launch REST API (FastAPI)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/api.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      }
+    },
+    {
+      "name": "🎬 Summarize Video (CLI)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/summarize.py",
+      "args": [
+        "--input", "${input:videoPath}",
+        "--output", "outputs/summary",
+        "--max-duration", "60",
+        "--keep-audio",
+        "--best-keyframes"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      }
+    },
+    {
+      "name": "🎬 Summarize Video – YouTube Shorts",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/summarize.py",
+      "args": [
+        "--input", "${input:videoPath}",
+        "--output", "outputs/shorts",
+        "--max-duration", "60",
+        "--threshold", "95",
+        "--secs-per-shot", "2.5",
+        "--keep-audio",
+        "--best-keyframes"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      }
+    },
+    {
+      "name": "🎤 Summarize Video with Transcription",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/summarize.py",
+      "args": [
+        "--input", "${input:videoPath}",
+        "--output", "outputs/transcribed",
+        "--keep-audio",
+        "--transcribe",
+        "--whisper-model", "base"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      }
+    },
+    {
+      "name": "🔍 Inspect Video Metadata",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/inspect_video.py",
+      "args": ["${input:videoPath}"],
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "videoPath",
+      "type": "promptString",
+      "description": "Path to the input video file (e.g., data/demo.mp4)"
+    }
+  ]
+}
